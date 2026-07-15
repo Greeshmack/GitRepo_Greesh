@@ -17,6 +17,282 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Transformations_DF')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Goa_DS",
+								"type": "DatasetReference"
+							},
+							"name": "goasource"
+						},
+						{
+							"dataset": {
+								"referenceName": "Hyd_DS",
+								"type": "DatasetReference"
+							},
+							"name": "hydsource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "GoaAndHyd_Raw_DS",
+								"type": "DatasetReference"
+							},
+							"name": "RAWsink"
+						},
+						{
+							"dataset": {
+								"referenceName": "Aggregrate_DS",
+								"type": "DatasetReference"
+							},
+							"name": "Aggregratedatasink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "unionhydandgoa"
+						},
+						{
+							"name": "selectfields"
+						},
+						{
+							"name": "window1"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "surrogateKey1"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "alterRow2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          EID as integer,",
+						"          EName as string,",
+						"          Esalary as integer,",
+						"          Addres as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     limit: 100,",
+						"     ignoreNoFilesFound: false) ~> goasource",
+						"source(output(",
+						"          EID as integer,",
+						"          EName as string,",
+						"          Esalary as integer,",
+						"          Addres as string,",
+						"          DID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> hydsource",
+						"goasource, hydsource union(byName: true)~> unionhydandgoa",
+						"unionhydandgoa select(mapColumn(",
+						"          EID,",
+						"          EName,",
+						"          Esalary,",
+						"          Addres,",
+						"          DID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectfields",
+						"surrogateKey1 window(over(EName),",
+						"     desc(Esalary, true),",
+						"     Sal_rownum = rowNumber(),",
+						"          Sal_denseRank = denseRank(),",
+						"          Sal_Rank = rank()) ~> window1",
+						"window1 aggregate(groupBy(Addres,",
+						"          EID,",
+						"          EName,",
+						"          Esalary,",
+						"          SKey),",
+						"     Total_EID = count(EID),",
+						"          Sum_Sal = sum(Esalary),",
+						"          MAX_Sal = max(Esalary)) ~> aggregate1",
+						"selectfields keyGenerate(output(SKey as long),",
+						"     startAt: 1111L,",
+						"     stepValue: 1L) ~> surrogateKey1",
+						"window1 alterRow(insertIf(isNull(SKey))) ~> alterRow1",
+						"aggregate1 alterRow(upsertIf(true())) ~> alterRow2",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['SKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> RAWsink",
+						"alterRow2 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['SKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> Aggregratedatasink"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "All_Cities_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Chennai_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Aggregrate_DS",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "lookup1"
+						}
+					],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source(output(",
+						"          Customer_id as string,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          age as long,",
+						"          Gender as string,",
+						"          city as string,",
+						"          country as string,",
+						"          signup_date as date,",
+						"          is_active as boolean,",
+						"          annual_spend as double,",
+						"          File_Path as string,",
+						"          File_Name as string,",
+						"          Current_Date as date,",
+						"          Pipeline_Name as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     limit: 100,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source1, source2 lookup(Customer_id == Customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Bronze_Silver_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Incr_Bronze_Silver_",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Incr_Bronze_Silver_",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"chennaitgt": {},
+									"bangaloresink": {},
+									"mumbaisink": {},
+									"allcitiessink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine",
+							"continuationSettings": {
+								"customizedCheckpointKey": "a8ebb911-5912-437a-be21-31dad434959b"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-14T05:56:43Z"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Datalake_SQL_RAW_Aggre_Pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -61,7 +337,9 @@
 				"annotations": [],
 				"lastPublishTime": "2026-07-12T08:50:34Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Transformations_DF')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/EventStorage')]",
