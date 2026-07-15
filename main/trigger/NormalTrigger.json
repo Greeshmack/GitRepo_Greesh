@@ -1,0 +1,25 @@
+{
+	"name": "NormalTrigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "ADL_ASQL_Orders_Pipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 1,
+				"startTime": "2026-07-15T15:19:00",
+				"endTime": "2026-07-15T16:46:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
