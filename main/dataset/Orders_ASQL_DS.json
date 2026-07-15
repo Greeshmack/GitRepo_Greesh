@@ -1,0 +1,16 @@
+{
+	"name": "Orders_ASQL_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ASQL_Silver_Layer_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "cust_orders"
+		}
+	}
+}
