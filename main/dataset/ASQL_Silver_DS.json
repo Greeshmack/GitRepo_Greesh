@@ -1,0 +1,17 @@
+{
+	"name": "ASQL_Silver_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ASQL_Silver_Layer_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "ASQL_Customer_Silver_DSs"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

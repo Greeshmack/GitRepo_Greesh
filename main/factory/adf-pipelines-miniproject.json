@@ -1,0 +1,15 @@
+{
+	"name": "adf-pipelines-miniproject",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "e1d682bc-fe89-4e5b-b7cb-c0454415ecee",
+		"tenantId": "84e256d6-dffa-4106-971d-009711a96290"
+	}
+}

@@ -1,0 +1,37 @@
+{
+	"name": "Bronze_Silver_Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Incr_Bronze_Silver_",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Incr_Bronze_Silver_",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine",
+					"continuationSettings": {
+						"customizedCheckpointKey": "a8ebb911-5912-437a-be21-31dad434959b"
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-07-14T05:56:43Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

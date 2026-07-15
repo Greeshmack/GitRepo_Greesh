@@ -1,0 +1,275 @@
+{
+	"name": "ADL_Parquete_Src_ASQL_TGT_Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "landing-layer//customer_data_50rows.parquet"
+					},
+					{
+						"name": "Destination",
+						"value": "dbo.Customer_Bronze_DS"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"additionalColumns": [
+							{
+								"name": "File_Path",
+								"value": "$$FILEPATH"
+							},
+							{
+								"name": "File_Name",
+								"value": "$$FILENAME"
+							},
+							{
+								"name": "Current_Date",
+								"value": {
+									"value": "@utcNow()",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "Pipeline_Name",
+								"value": {
+									"value": "@pipeline().Pipeline",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "customer_id",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "Customer_id",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "first_name",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "first_name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "last_name",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "last_name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "email",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "email",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "age",
+									"type": "Int64",
+									"physicalType": "INT64"
+								},
+								"sink": {
+									"name": "age",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "gender",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "Gender",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "city",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "city",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "country",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "country",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "signup_date",
+									"type": "String",
+									"physicalType": "UTF8"
+								},
+								"sink": {
+									"name": "signup_date",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "is_active",
+									"type": "Boolean",
+									"physicalType": "BOOLEAN"
+								},
+								"sink": {
+									"name": "is_active",
+									"type": "Boolean",
+									"physicalType": "bit"
+								}
+							},
+							{
+								"source": {
+									"name": "annual_spend",
+									"type": "Double",
+									"physicalType": "DOUBLE"
+								},
+								"sink": {
+									"name": "annual_spend",
+									"type": "Double",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "File_Path",
+									"type": "String"
+								},
+								"sink": {
+									"name": "File_Path",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "File_Name",
+									"type": "String"
+								},
+								"sink": {
+									"name": "File_Name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Current_Date",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Current_Date",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Pipeline_Name",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Pipeline_Name",
+									"type": "String",
+									"physicalType": "nvarchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Customer_Parquete_DS",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ASQL_Customer_Parquete_TGT_DS",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-07-14T05:56:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

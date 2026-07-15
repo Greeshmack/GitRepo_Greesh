@@ -1,0 +1,17 @@
+{
+	"name": "GoaAndHyd_Raw_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ASQL_Silver_Layer_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Goa_And_Hyd_Raw"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

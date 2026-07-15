@@ -1,0 +1,17 @@
+{
+	"name": "Aggregrate_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ASQL_Silver_Layer_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "aggregrated_regions"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

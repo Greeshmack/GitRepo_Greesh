@@ -1,0 +1,45 @@
+{
+	"name": "Hyd_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLake_Bronze_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Hyd.txt",
+				"fileSystem": "practise-files"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "EID",
+				"type": "String"
+			},
+			{
+				"name": "EName",
+				"type": "String"
+			},
+			{
+				"name": "Esalary",
+				"type": "String"
+			},
+			{
+				"name": "Addres",
+				"type": "String"
+			},
+			{
+				"name": "DID",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

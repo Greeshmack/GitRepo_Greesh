@@ -1,0 +1,137 @@
+{
+	"name": "Transformations_DF",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Goa_DS",
+						"type": "DatasetReference"
+					},
+					"name": "goasource"
+				},
+				{
+					"dataset": {
+						"referenceName": "Hyd_DS",
+						"type": "DatasetReference"
+					},
+					"name": "hydsource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "GoaAndHyd_Raw_DS",
+						"type": "DatasetReference"
+					},
+					"name": "RAWsink"
+				},
+				{
+					"dataset": {
+						"referenceName": "Aggregrate_DS",
+						"type": "DatasetReference"
+					},
+					"name": "Aggregratedatasink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "unionhydandgoa"
+				},
+				{
+					"name": "selectfields"
+				},
+				{
+					"name": "window1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          EID as integer,",
+				"          EName as string,",
+				"          Esalary as integer,",
+				"          Addres as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false) ~> goasource",
+				"source(output(",
+				"          EID as integer,",
+				"          EName as string,",
+				"          Esalary as integer,",
+				"          Addres as string,",
+				"          DID as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     ignoreNoFilesFound: false) ~> hydsource",
+				"goasource, hydsource union(byName: true)~> unionhydandgoa",
+				"unionhydandgoa select(mapColumn(",
+				"          EID,",
+				"          EName,",
+				"          Esalary,",
+				"          Addres,",
+				"          DID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectfields",
+				"surrogateKey1 window(over(EName),",
+				"     desc(Esalary, true),",
+				"     Sal_rownum = rowNumber(),",
+				"          Sal_denseRank = denseRank(),",
+				"          Sal_Rank = rank()) ~> window1",
+				"window1 aggregate(groupBy(Addres,",
+				"          EID,",
+				"          EName,",
+				"          Esalary,",
+				"          SKey),",
+				"     Total_EID = count(EID),",
+				"          Sum_Sal = sum(Esalary),",
+				"          MAX_Sal = max(Esalary)) ~> aggregate1",
+				"selectfields keyGenerate(output(SKey as long),",
+				"     startAt: 1111L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"window1 alterRow(insertIf(isNull(SKey))) ~> alterRow1",
+				"aggregate1 alterRow(upsertIf(true())) ~> alterRow2",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['SKey'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> RAWsink",
+				"alterRow2 sink(allowSchemaDrift: true,",
+				"     validateSchema: true,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['SKey'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> Aggregratedatasink"
+			]
+		}
+	}
+}

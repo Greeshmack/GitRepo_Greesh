@@ -1,0 +1,66 @@
+{
+	"name": "Customer_Parquete_DS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "DataLake_Bronze_LS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "customer_data_50rows.parquet",
+				"fileSystem": "landing-layer"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "customer_id",
+				"type": "UTF8"
+			},
+			{
+				"name": "first_name",
+				"type": "UTF8"
+			},
+			{
+				"name": "last_name",
+				"type": "UTF8"
+			},
+			{
+				"name": "email",
+				"type": "UTF8"
+			},
+			{
+				"name": "age",
+				"type": "INT64"
+			},
+			{
+				"name": "gender",
+				"type": "UTF8"
+			},
+			{
+				"name": "city",
+				"type": "UTF8"
+			},
+			{
+				"name": "country",
+				"type": "UTF8"
+			},
+			{
+				"name": "signup_date",
+				"type": "UTF8"
+			},
+			{
+				"name": "is_active",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "annual_spend",
+				"type": "DOUBLE"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

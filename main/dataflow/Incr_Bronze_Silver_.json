@@ -1,0 +1,133 @@
+{
+	"name": "Incr_Bronze_Silver_",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ASQL_Customer_Parquete_TGT_DS",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Chennai_Silver_DS",
+						"type": "DatasetReference"
+					},
+					"name": "chennaitgt",
+					"rejectedDataLinkedService": {
+						"referenceName": "DataLake_Bronze_LS",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"dataset": {
+						"referenceName": "Bangalore_Silver_DS",
+						"type": "DatasetReference"
+					},
+					"name": "bangaloresink"
+				},
+				{
+					"dataset": {
+						"referenceName": "Mumbai_Silver_DS",
+						"type": "DatasetReference"
+					},
+					"name": "mumbaisink"
+				},
+				{
+					"dataset": {
+						"referenceName": "All_Cities_Silver_DS",
+						"type": "DatasetReference"
+					},
+					"name": "allcitiessink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow1"
+				},
+				{
+					"name": "split1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Customer_id as string,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          age as long,",
+				"          Gender as string,",
+				"          city as string,",
+				"          country as string,",
+				"          signup_date as date,",
+				"          is_active as boolean,",
+				"          annual_spend as double,",
+				"          File_Path as string,",
+				"          File_Name as string,",
+				"          Current_Date as date,",
+				"          Pipeline_Name as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     inferDriftedColumnTypes: true,",
+				"     limit: 100,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 alterRow(upsertIf(true())) ~> alterRow1",
+				"alterRow1 split(city==\"Chennai\",",
+				"     city==\"Bengaluru\",",
+				"     city==\"Mumbai\",",
+				"     disjoint: false) ~> split1@(Chennai, Bangalore, Mumbai, AllOtherCities)",
+				"split1@Chennai sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['Customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> chennaitgt",
+				"split1@Bangalore sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['Customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> bangaloresink",
+				"split1@Mumbai sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['Customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> mumbaisink",
+				"split1@AllOtherCities sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:true,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['Customer_id'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> allcitiessink"
+			]
+		}
+	}
+}
