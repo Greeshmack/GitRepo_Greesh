@@ -1,0 +1,146 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-pipelines-miniproject"
+		},
+		"ASQL_Gold_LAyer_LS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ASQL_Gold_LAyer_LS'"
+		},
+		"ASQL_Silver_Layer_LS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ASQL_Silver_Layer_LS'"
+		},
+		"BLOB_Landing_Layer_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'BLOB_Landing_Layer_LS'"
+		},
+		"DataLake_Bronze_LS_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'DataLake_Bronze_LS'"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "3.gold-layer-sqltables"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "greeshma"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "2.silverlayer"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "greeshma"
+		},
+		"DataLake_Bronze_LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://1bronzelayerindatalake.dfs.core.windows.net/"
+		},
+		"EventStorage_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/1ad995f9-c935-4e0a-a820-4599399cb64b/resourceGroups/ADF_MINI_PROJECT/providers/Microsoft.Storage/storageAccounts/1bronzelayerindatalake"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-pipelines-miniproject_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ASQL_Gold_LAyer_LS_password": {
+						"value": "[parameters('ASQL_Gold_LAyer_LS_password')]"
+					},
+					"ASQL_Silver_Layer_LS_password": {
+						"value": "[parameters('ASQL_Silver_Layer_LS_password')]"
+					},
+					"BLOB_Landing_Layer_LS_connectionString": {
+						"value": "[parameters('BLOB_Landing_Layer_LS_connectionString')]"
+					},
+					"DataLake_Bronze_LS_accountKey": {
+						"value": "[parameters('DataLake_Bronze_LS_accountKey')]"
+					},
+					"ASQL_Gold_LAyer_LS_properties_typeProperties_server": {
+						"value": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_server')]"
+					},
+					"ASQL_Gold_LAyer_LS_properties_typeProperties_database": {
+						"value": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_database')]"
+					},
+					"ASQL_Gold_LAyer_LS_properties_typeProperties_userName": {
+						"value": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_userName')]"
+					},
+					"ASQL_Silver_Layer_LS_properties_typeProperties_server": {
+						"value": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_server')]"
+					},
+					"ASQL_Silver_Layer_LS_properties_typeProperties_database": {
+						"value": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_database')]"
+					},
+					"ASQL_Silver_Layer_LS_properties_typeProperties_userName": {
+						"value": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_userName')]"
+					},
+					"DataLake_Bronze_LS_properties_typeProperties_url": {
+						"value": "[parameters('DataLake_Bronze_LS_properties_typeProperties_url')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "adf-pipelines-miniproject_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"EventStorage_properties_typeProperties_scope": {
+						"value": "[parameters('EventStorage_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf-pipelines-miniproject_ArmTemplate_0')]"
+			]
+		}
+	]
+}

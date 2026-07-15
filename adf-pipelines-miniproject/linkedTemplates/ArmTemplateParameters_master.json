@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-pipelines-miniproject"
+		},
+		"ASQL_Gold_LAyer_LS_password": {
+			"value": ""
+		},
+		"ASQL_Silver_Layer_LS_password": {
+			"value": ""
+		},
+		"BLOB_Landing_Layer_LS_connectionString": {
+			"value": ""
+		},
+		"DataLake_Bronze_LS_accountKey": {
+			"value": ""
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_server": {
+			"value": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_database": {
+			"value": "3.gold-layer-sqltables"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_userName": {
+			"value": "greeshma"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_server": {
+			"value": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_database": {
+			"value": "2.silverlayer"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_userName": {
+			"value": "greeshma"
+		},
+		"DataLake_Bronze_LS_properties_typeProperties_url": {
+			"value": "https://1bronzelayerindatalake.dfs.core.windows.net/"
+		},
+		"EventStorage_properties_typeProperties_scope": {
+			"value": "/subscriptions/1ad995f9-c935-4e0a-a820-4599399cb64b/resourceGroups/ADF_MINI_PROJECT/providers/Microsoft.Storage/storageAccounts/1bronzelayerindatalake"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

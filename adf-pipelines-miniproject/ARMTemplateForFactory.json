@@ -1,0 +1,1266 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-pipelines-miniproject"
+		},
+		"ASQL_Gold_LAyer_LS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ASQL_Gold_LAyer_LS'"
+		},
+		"ASQL_Silver_Layer_LS_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ASQL_Silver_Layer_LS'"
+		},
+		"BLOB_Landing_Layer_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'BLOB_Landing_Layer_LS'"
+		},
+		"DataLake_Bronze_LS_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'DataLake_Bronze_LS'"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "3.gold-layer-sqltables"
+		},
+		"ASQL_Gold_LAyer_LS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "greeshma"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-sql-server-silverlayer.database.windows.net"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "2.silverlayer"
+		},
+		"ASQL_Silver_Layer_LS_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "greeshma"
+		},
+		"DataLake_Bronze_LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://1bronzelayerindatalake.dfs.core.windows.net/"
+		},
+		"EventStorage_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/1ad995f9-c935-4e0a-a820-4599399cb64b/resourceGroups/ADF_MINI_PROJECT/providers/Microsoft.Storage/storageAccounts/1bronzelayerindatalake"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ADL_Parquete_Src_ASQL_TGT_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "landing-layer//customer_data_50rows.parquet"
+							},
+							{
+								"name": "Destination",
+								"value": "dbo.Customer_Bronze_DS"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"additionalColumns": [
+									{
+										"name": "File_Path",
+										"value": "$$FILEPATH"
+									},
+									{
+										"name": "File_Name",
+										"value": "$$FILENAME"
+									},
+									{
+										"name": "Current_Date",
+										"value": {
+											"value": "@utcNow()",
+											"type": "Expression"
+										}
+									},
+									{
+										"name": "Pipeline_Name",
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										}
+									}
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "ParquetReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "customer_id",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "Customer_id",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "first_name",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "first_name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "last_name",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "last_name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "email",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "email",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "age",
+											"type": "Int64",
+											"physicalType": "INT64"
+										},
+										"sink": {
+											"name": "age",
+											"type": "Int64",
+											"physicalType": "bigint"
+										}
+									},
+									{
+										"source": {
+											"name": "gender",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "Gender",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "city",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "city",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "country",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "country",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "signup_date",
+											"type": "String",
+											"physicalType": "UTF8"
+										},
+										"sink": {
+											"name": "signup_date",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "is_active",
+											"type": "Boolean",
+											"physicalType": "BOOLEAN"
+										},
+										"sink": {
+											"name": "is_active",
+											"type": "Boolean",
+											"physicalType": "bit"
+										}
+									},
+									{
+										"source": {
+											"name": "annual_spend",
+											"type": "Double",
+											"physicalType": "DOUBLE"
+										},
+										"sink": {
+											"name": "annual_spend",
+											"type": "Double",
+											"physicalType": "float"
+										}
+									},
+									{
+										"source": {
+											"name": "File_Path",
+											"type": "String"
+										},
+										"sink": {
+											"name": "File_Path",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "File_Name",
+											"type": "String"
+										},
+										"sink": {
+											"name": "File_Name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Current_Date",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Current_Date",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Pipeline_Name",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Pipeline_Name",
+											"type": "String",
+											"physicalType": "nvarchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Customer_Parquete_DS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ASQL_Customer_Parquete_TGT_DS",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-14T05:56:42Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Customer_Parquete_DS')]",
+				"[concat(variables('factoryId'), '/datasets/ASQL_Customer_Parquete_TGT_DS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Bronze_Silver_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Incr_Bronze_Silver_",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Incr_Bronze_Silver_",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"chennaitgt": {},
+									"bangaloresink": {},
+									"mumbaisink": {},
+									"allcitiessink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine",
+							"continuationSettings": {
+								"customizedCheckpointKey": "a8ebb911-5912-437a-be21-31dad434959b"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-14T05:56:43Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Incr_Bronze_Silver_')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Datalake_SQL_RAW_Aggre_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "dataflow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Transformations_DF",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"goasource": {},
+									"hydsource": {},
+									"RAWsink": {},
+									"Aggregratedatasink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2026-07-12T08:50:34Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Transformations_DF')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQL_Customer_Parquete_TGT_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Customer_Bronze_DS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQL_Silver_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ASQL_Customer_Silver_DSs"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Aggregrate_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "aggregrated_regions"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/All_Cities_Silver_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "All_Cities_Silver"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Bangalore_Silver_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Bangalore_Silver"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Chennai_Silver_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Chennai_Silver"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Customer_Parquete_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLake_Bronze_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "customer_data_50rows.parquet",
+						"fileSystem": "landing-layer"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "UTF8"
+					},
+					{
+						"name": "first_name",
+						"type": "UTF8"
+					},
+					{
+						"name": "last_name",
+						"type": "UTF8"
+					},
+					{
+						"name": "email",
+						"type": "UTF8"
+					},
+					{
+						"name": "age",
+						"type": "INT64"
+					},
+					{
+						"name": "gender",
+						"type": "UTF8"
+					},
+					{
+						"name": "city",
+						"type": "UTF8"
+					},
+					{
+						"name": "country",
+						"type": "UTF8"
+					},
+					{
+						"name": "signup_date",
+						"type": "UTF8"
+					},
+					{
+						"name": "is_active",
+						"type": "BOOLEAN"
+					},
+					{
+						"name": "annual_spend",
+						"type": "DOUBLE"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DataLake_Bronze_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GoaAndHyd_Raw_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Goa_And_Hyd_Raw"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Goa_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLake_Bronze_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Goa.txt",
+						"fileSystem": "practise-files"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EID",
+						"type": "String"
+					},
+					{
+						"name": "EName",
+						"type": "String"
+					},
+					{
+						"name": "Esalary",
+						"type": "String"
+					},
+					{
+						"name": "Addres",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DataLake_Bronze_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Hyd_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DataLake_Bronze_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Hyd.txt",
+						"fileSystem": "practise-files"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "EID",
+						"type": "String"
+					},
+					{
+						"name": "EName",
+						"type": "String"
+					},
+					{
+						"name": "Esalary",
+						"type": "String"
+					},
+					{
+						"name": "Addres",
+						"type": "String"
+					},
+					{
+						"name": "DID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DataLake_Bronze_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Mumbai_Silver_DS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQL_Silver_Layer_LS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Mumbai_Silver"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQL_Silver_Layer_LS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQL_Gold_LAyer_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_server')]",
+					"database": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ASQL_Gold_LAyer_LS_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ASQL_Gold_LAyer_LS_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQL_Silver_Layer_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_server')]",
+					"database": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ASQL_Silver_Layer_LS_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ASQL_Silver_Layer_LS_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BLOB_Landing_Layer_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('BLOB_Landing_Layer_LS_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DataLake_Bronze_LS')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('DataLake_Bronze_LS_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('DataLake_Bronze_LS_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EventStorage')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ADL_Parquete_Src_ASQL_TGT_Pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/landing-layer/blobs/",
+					"blobPathEndsWith": "parquet",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('EventStorage_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated",
+						"Microsoft.Storage.BlobDeleted"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ADL_Parquete_Src_ASQL_TGT_Pipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Incr_Bronze_Silver_')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ASQL_Customer_Parquete_TGT_DS",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Chennai_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "chennaitgt",
+							"rejectedDataLinkedService": {
+								"referenceName": "DataLake_Bronze_LS",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"dataset": {
+								"referenceName": "Bangalore_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "bangaloresink"
+						},
+						{
+							"dataset": {
+								"referenceName": "Mumbai_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "mumbaisink"
+						},
+						{
+							"dataset": {
+								"referenceName": "All_Cities_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "allcitiessink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "split1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Customer_id as string,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          age as long,",
+						"          Gender as string,",
+						"          city as string,",
+						"          country as string,",
+						"          signup_date as date,",
+						"          is_active as boolean,",
+						"          annual_spend as double,",
+						"          File_Path as string,",
+						"          File_Name as string,",
+						"          Current_Date as date,",
+						"          Pipeline_Name as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     limit: 100,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source1 alterRow(upsertIf(true())) ~> alterRow1",
+						"alterRow1 split(city==\"Chennai\",",
+						"     city==\"Bengaluru\",",
+						"     city==\"Mumbai\",",
+						"     disjoint: false) ~> split1@(Chennai, Bangalore, Mumbai, AllOtherCities)",
+						"split1@Chennai sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['Customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> chennaitgt",
+						"split1@Bangalore sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['Customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> bangaloresink",
+						"split1@Mumbai sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['Customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> mumbaisink",
+						"split1@AllOtherCities sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['Customer_id'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> allcitiessink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ASQL_Customer_Parquete_TGT_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Chennai_Silver_DS')]",
+				"[concat(variables('factoryId'), '/linkedServices/DataLake_Bronze_LS')]",
+				"[concat(variables('factoryId'), '/datasets/Bangalore_Silver_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Mumbai_Silver_DS')]",
+				"[concat(variables('factoryId'), '/datasets/All_Cities_Silver_DS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Transformations_DF')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Goa_DS",
+								"type": "DatasetReference"
+							},
+							"name": "goasource"
+						},
+						{
+							"dataset": {
+								"referenceName": "Hyd_DS",
+								"type": "DatasetReference"
+							},
+							"name": "hydsource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "GoaAndHyd_Raw_DS",
+								"type": "DatasetReference"
+							},
+							"name": "RAWsink"
+						},
+						{
+							"dataset": {
+								"referenceName": "Aggregrate_DS",
+								"type": "DatasetReference"
+							},
+							"name": "Aggregratedatasink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "unionhydandgoa"
+						},
+						{
+							"name": "selectfields"
+						},
+						{
+							"name": "window1"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "surrogateKey1"
+						},
+						{
+							"name": "alterRow1"
+						},
+						{
+							"name": "alterRow2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          EID as integer,",
+						"          EName as string,",
+						"          Esalary as integer,",
+						"          Addres as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     limit: 100,",
+						"     ignoreNoFilesFound: false) ~> goasource",
+						"source(output(",
+						"          EID as integer,",
+						"          EName as string,",
+						"          Esalary as integer,",
+						"          Addres as string,",
+						"          DID as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false) ~> hydsource",
+						"goasource, hydsource union(byName: true)~> unionhydandgoa",
+						"unionhydandgoa select(mapColumn(",
+						"          EID,",
+						"          EName,",
+						"          Esalary,",
+						"          Addres,",
+						"          DID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectfields",
+						"surrogateKey1 window(over(EName),",
+						"     desc(Esalary, true),",
+						"     Sal_rownum = rowNumber(),",
+						"          Sal_denseRank = denseRank(),",
+						"          Sal_Rank = rank()) ~> window1",
+						"window1 aggregate(groupBy(Addres,",
+						"          EID,",
+						"          EName,",
+						"          Esalary,",
+						"          SKey),",
+						"     Total_EID = count(EID),",
+						"          Sum_Sal = sum(Esalary),",
+						"          MAX_Sal = max(Esalary)) ~> aggregate1",
+						"selectfields keyGenerate(output(SKey as long),",
+						"     startAt: 1111L,",
+						"     stepValue: 1L) ~> surrogateKey1",
+						"window1 alterRow(insertIf(isNull(SKey))) ~> alterRow1",
+						"aggregate1 alterRow(upsertIf(true())) ~> alterRow2",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['SKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> RAWsink",
+						"alterRow2 sink(allowSchemaDrift: true,",
+						"     validateSchema: true,",
+						"     deletable:true,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['SKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> Aggregratedatasink"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Goa_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Hyd_DS')]",
+				"[concat(variables('factoryId'), '/datasets/GoaAndHyd_Raw_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Aggregrate_DS')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "All_Cities_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Chennai_Silver_DS",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Aggregrate_DS",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "lookup1"
+						}
+					],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source(output(",
+						"          Customer_id as string,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          email as string,",
+						"          age as long,",
+						"          Gender as string,",
+						"          city as string,",
+						"          country as string,",
+						"          signup_date as date,",
+						"          is_active as boolean,",
+						"          annual_spend as double,",
+						"          File_Path as string,",
+						"          File_Name as string,",
+						"          Current_Date as date,",
+						"          Pipeline_Name as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     limit: 100,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source1, source2 lookup(Customer_id == Customer_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/All_Cities_Silver_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Chennai_Silver_DS')]",
+				"[concat(variables('factoryId'), '/datasets/Aggregrate_DS')]"
+			]
+		}
+	]
+}
