@@ -1,0 +1,125 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "covid-19-adf-resource"
+		},
+		"Is_ablob_covid19blobstgsrc_LS_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Is_ablob_covid19blobstgsrc_LS'"
+		},
+		"Is_adl_covidreportdatalake_LS_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'Is_adl_covidreportdatalake_LS'"
+		},
+		"ls_ASQL_covid_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_ASQL_covid'"
+		},
+		"Is_adl_covidreportdatalake_LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://covid19reportdatalake.dfs.core.windows.net/"
+		},
+		"Is_http_opendata_europe_scdc_LS_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "@{linkedService().sourceBaseURL}"
+		},
+		"ls_ASQL_covid_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "covid-19server.database.windows.net"
+		},
+		"ls_ASQL_covid_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "covid-db"
+		},
+		"ls_ASQL_covid_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "greeshma"
+		},
+		"tr_Population_data_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/1ad995f9-c935-4e0a-a820-4599399cb64b/resourceGroups/Covid-19_Project_RG/providers/Microsoft.Storage/storageAccounts/covid19blobstgsrc"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "covid-19-adf-resource_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"Is_ablob_covid19blobstgsrc_LS_connectionString": {
+						"value": "[parameters('Is_ablob_covid19blobstgsrc_LS_connectionString')]"
+					},
+					"Is_adl_covidreportdatalake_LS_accountKey": {
+						"value": "[parameters('Is_adl_covidreportdatalake_LS_accountKey')]"
+					},
+					"ls_ASQL_covid_password": {
+						"value": "[parameters('ls_ASQL_covid_password')]"
+					},
+					"Is_adl_covidreportdatalake_LS_properties_typeProperties_url": {
+						"value": "[parameters('Is_adl_covidreportdatalake_LS_properties_typeProperties_url')]"
+					},
+					"Is_http_opendata_europe_scdc_LS_properties_typeProperties_url": {
+						"value": "[parameters('Is_http_opendata_europe_scdc_LS_properties_typeProperties_url')]"
+					},
+					"ls_ASQL_covid_properties_typeProperties_server": {
+						"value": "[parameters('ls_ASQL_covid_properties_typeProperties_server')]"
+					},
+					"ls_ASQL_covid_properties_typeProperties_database": {
+						"value": "[parameters('ls_ASQL_covid_properties_typeProperties_database')]"
+					},
+					"ls_ASQL_covid_properties_typeProperties_userName": {
+						"value": "[parameters('ls_ASQL_covid_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "covid-19-adf-resource_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"tr_Population_data_properties_typeProperties_scope": {
+						"value": "[parameters('tr_Population_data_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'covid-19-adf-resource_ArmTemplate_0')]"
+			]
+		}
+	]
+}

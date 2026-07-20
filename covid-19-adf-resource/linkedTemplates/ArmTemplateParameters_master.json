@@ -1,0 +1,42 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "covid-19-adf-resource"
+		},
+		"Is_ablob_covid19blobstgsrc_LS_connectionString": {
+			"value": ""
+		},
+		"Is_adl_covidreportdatalake_LS_accountKey": {
+			"value": ""
+		},
+		"ls_ASQL_covid_password": {
+			"value": ""
+		},
+		"Is_adl_covidreportdatalake_LS_properties_typeProperties_url": {
+			"value": "https://covid19reportdatalake.dfs.core.windows.net/"
+		},
+		"Is_http_opendata_europe_scdc_LS_properties_typeProperties_url": {
+			"value": "@{linkedService().sourceBaseURL}"
+		},
+		"ls_ASQL_covid_properties_typeProperties_server": {
+			"value": "covid-19server.database.windows.net"
+		},
+		"ls_ASQL_covid_properties_typeProperties_database": {
+			"value": "covid-db"
+		},
+		"ls_ASQL_covid_properties_typeProperties_userName": {
+			"value": "greeshma"
+		},
+		"tr_Population_data_properties_typeProperties_scope": {
+			"value": "/subscriptions/1ad995f9-c935-4e0a-a820-4599399cb64b/resourceGroups/Covid-19_Project_RG/providers/Microsoft.Storage/storageAccounts/covid19blobstgsrc"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
