@@ -1,0 +1,17 @@
+{
+	"name": "ds_asql_processed_cases_deaths",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_ASQL_covid",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "covid_reporting",
+			"table": "cases_and_deaths"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
